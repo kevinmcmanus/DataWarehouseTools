@@ -28,9 +28,15 @@ while @@fetch_status = 0
 begin
 	-- create the dimension if it doesn't already exist
 	if object_id('Dim'+@cname) is NULL execute crDim @tblname,  @cname
+
+	--create the unique value view for this table's column
+	execute crDimView @tblname, @cname
+
+	--create the merge update procedure for this table & dimenstion
+	execute crDimPrc @tblname, @cname
 	
-	--load the data in via the 'merge' sproc for this dimension
-	set @cmdbuf = '[dimprc_Dim'+@cname+']'
+	--load the data in via the 'merge' sproc for this table and dimension
+	set @cmdbuf = '[dimprc_' + @tblname + 'Dim'+@cname+']'
 	execute sp_executesql @cmdbuf
 
 	fetch next from colcursor into @cname
